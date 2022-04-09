@@ -17,7 +17,7 @@ namespace HBARTVLScanner
         private static readonly HttpClient client = new HttpClient();
 
         [FunctionName("Function1")]
-        public async static Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+        public async static Task Run([TimerTrigger("0 0 */1 * * *")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
@@ -31,7 +31,7 @@ namespace HBARTVLScanner
             var tvlWithDecimal = tvl.Insert(tvl.Length - decimals, ".");
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", Environment.GetEnvironmentVariable("ConnectionStrings:Storage")));
+            BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", Environment.GetEnvironmentVariable("StorageKey")));
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("hbartvl");
             BlobClient blobClient = containerClient.GetBlobClient(DateTime.UtcNow.ToString("yyyyMMddHHmmss"));
 
