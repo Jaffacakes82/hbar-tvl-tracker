@@ -46,6 +46,8 @@ else
                     <small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.TVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small>
                     <br />
                     <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>
+                    <br />
+                    <small class="card-text my-0 mt-1"><strong>Current estimated APY:</strong> <span>@currentEstimateAPY%</span></small>
                 </div>
             </div>
         </div>
@@ -74,6 +76,7 @@ else
     private int phaseTwoMax = 400000000;
     private string currentPhase;
     private string currentEmissions;
+    private string currentEstimateAPY;
     private bool isCapped = true;
     private string AnimateClass { get; set; }
     private Timer timer = new Timer(5000);
@@ -88,18 +91,25 @@ else
         if (currentPhase == "Capped")
         {
             currentEmissions = cappedEmissions.ToString("N0");
+            var apy = ((cappedEmissions * 365) / LiveTVL) * 100;
+            currentEstimateAPY = apy.ToString("N2");
         }
         else if (currentPhase == "Phase 1")
         {
             currentEmissions = phaseOneEmissions.ToString("N0");
+            var apy = ((phaseOneEmissions * 365) / LiveTVL) * 100;
+            currentEstimateAPY = apy.ToString("N2");
         }
         else if (currentPhase == "Phase 2")
         {
             currentEmissions = phaseTwoEmissions.ToString("N0");
+            var apy = ((phaseTwoEmissions * 365) / LiveTVL) * 100;
+            currentEstimateAPY = apy.ToString("N2");
         }
         else
         {
             currentEmissions = "Unknown";
+            currentEstimateAPY = "Unknown";
         }
 
         timer.Elapsed += (sender, eventArgs) => GetLiveTVL();
