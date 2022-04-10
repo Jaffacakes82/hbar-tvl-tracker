@@ -1,0 +1,124 @@
+﻿@page "/"
+
+
+<PageTitle>Stader Hedera TVL Tracker</PageTitle>
+
+@using HBARTVLScanner.Web.Data
+@using System.Timers
+@inject TVLService TVLService
+
+<div class="row px-4 pt-5 mt-5 text-center">
+    <div class="col-lg-6 mx-auto">
+        <svg width="100" xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 200 200"><title>black-cutout</title><rect x="80.13" y="95.32" width="39.21" height="10.01" /><path d="M99.74,30.66a69.67,69.67,0,1,0,69.67,69.67A69.67,69.67,0,0,0,99.74,30.66m28.78,101h-9.18V112H80.13v19.61H71V69h9.18V88.65h39.21V69h9.18Z" /></svg>
+        <h1 class="display-4 my-2">HBAR TVL Tracker</h1>
+        <p class="lead mb-4">This tool provides basic insights into TVL in the Stader Labs Hedera liquidity pool. The tool snapshots TVL on an hourly basis, with the aim of tracking TVL changes over time and perhaps in future helping calculate rewards in phase 3.</p>
+    </div>
+</div>
+
+@if (TVLSnapshot == null)
+{
+    <div class="row px-4 py-2 my-2 text-center">
+        <div class="col-lg-6 mx-auto">
+            <div class="spinner-border mt-4" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row px-4 py-2 my-2 justify-content-center">
+        <div class="col-lg-5">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Unlock phases</h5>
+                    @*<h6 class="card-subtitle mb-2 text-muted">Current phase: @()<span style="color:green;">@(LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "N/A")</span></h6>*@
+                    <h6 class="card-subtitle mb-2 text-muted">Current phase: <span style="@(currentPhase == "Capped" ? "color:orange;" : "color:green;")">@currentPhase</span></h6>
+                    <small class="card-text"><strong>Current emission rate:</strong> @currentEmissions ℏ per 24 hours</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">TVL statistics</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Live TVL: <span class="@AnimateClass">@LiveTVL.ToString("N8") ℏ</span></h6>
+                    <small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.TVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small>
+                    <br />
+                    <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<div class="row px-4 pt-3 mt-3 text-center">
+    <div class="col-lg-6 mx-auto">
+        <div>
+            <small class="text-muted">Join the Stader Labs Hedera Official community on Telegram!</small>
+        </div>
+        <a href="https://t.me/StaderLabs_Hedera_Official">
+            <img src="/images/icons8-telegram-app-48.png" />
+        </a>
+    </div>
+</div>
+
+@code {
+    public TVL TVLSnapshot { get; set; }
+    public double LiveTVL { get; set; }
+    private int cappedEmissions = 2000;
+    private int phaseOneEmissions = 300000;
+    private int phaseTwoEmissions = 500000;
+    private int phaseOneMax = 200000000;
+    private int phaseTwoMax = 400000000;
+    private string currentPhase;
+    private string currentEmissions;
+    private bool isCapped = true;
+    private string AnimateClass { get; set; }
+    private Timer timer = new Timer(5000);
+
+    protected override async Task OnInitializedAsync()
+    {
+        TVLSnapshot = await TVLService.GetTVLAsync();
+        LiveTVL = await TVLService.GetLiveTVL();
+
+        currentPhase = isCapped ? "Capped" : LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "Unknown";
+
+        if (currentPhase == "Capped")
+        {
+            currentEmissions = cappedEmissions.ToString("N0");
+        }
+        else if (currentPhase == "Phase 1")
+        {
+            currentEmissions = phaseOneEmissions.ToString("N0");
+        }
+        else if (currentPhase == "Phase 2")
+        {
+            currentEmissions = phaseTwoEmissions.ToString("N0");
+        }
+        else
+        {
+            currentEmissions = "Unknown";
+        }
+
+        timer.Elapsed += (sender, eventArgs) => GetLiveTVL();
+        timer.AutoReset = true;
+        timer.Start();
+    }
+
+    private async void GetLiveTVL()
+    {
+        AnimateClass = "";
+        await InvokeAsync(StateHasChanged);
+        var newLiveTvl = await TVLService.GetLiveTVL();
+
+        if (LiveTVL != newLiveTvl)
+        {
+            LiveTVL = newLiveTvl;
+            AnimateClass = "animate";
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

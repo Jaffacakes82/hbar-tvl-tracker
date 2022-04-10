@@ -1,0 +1,16 @@
+﻿.animate {
+    animation-name: msPulseEffect;
+    animation-duration: 2s;
+    animation-iteration-count: 1;
+    border-radius: 25%;
+}
+
+@keyframes msPulseEffect {
+    0% {
+        box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+}
