@@ -5,13 +5,15 @@
 
 @using HBARTVLScanner.Web.Data
 @using System.Timers
+@using System.Globalization;
 @inject TVLService TVLService
+@inject IConfiguration Config
 
 <div class="row px-4 pt-5 mt-5 text-center">
     <div class="col-lg-6 mx-auto">
         <svg width="100" xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 200 200"><title>black-cutout</title><rect x="80.13" y="95.32" width="39.21" height="10.01" /><path d="M99.74,30.66a69.67,69.67,0,1,0,69.67,69.67A69.67,69.67,0,0,0,99.74,30.66m28.78,101h-9.18V112H80.13v19.61H71V69h9.18V88.65h39.21V69h9.18Z" /></svg>
         <h1 class="display-4 my-2">HBAR TVL Tracker</h1>
-        <p class="lead mb-4">This tool provides basic insights into TVL in the Stader Labs Hedera liquidity pool. The tool snapshots TVL on an hourly basis, with the aim of tracking TVL changes over time and perhaps in future helping calculate rewards in phase 3.</p>
+        <p class="lead">This tool provides basic insights into TVL in the Stader Labs Hedera liquidity pool. The tool snapshots TVL on an hourly basis, with the aim of tracking TVL changes over time and perhaps in future helping calculate rewards in phase 3.</p>
     </div>
 </div>
 
@@ -29,16 +31,6 @@ else
 {
     <div class="row px-4 py-2 my-2 justify-content-center">
         <div class="col-lg-5">
-            <div class="card h-100 text-center">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Unlock phases</h5>
-                    @*<h6 class="card-subtitle mb-2 text-muted">Current phase: @()<span style="color:green;">@(LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "N/A")</span></h6>*@
-                    <h6 class="card-subtitle mb-2 text-muted">Current phase: <span style="@(currentPhase == "Capped" ? "color:orange;" : "color:green;")">@currentPhase</span></h6>
-                    <small class="card-text"><strong>Current emission rate:</strong> @currentEmissions ℏ per 24 hours</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-5">
             <div class="card text-center">
                 <div class="card-body">
                     <h5 class="card-title mb-3">TVL statistics</h5>
@@ -48,6 +40,19 @@ else
                     <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>
                     <br />
                     <small class="card-text my-0 mt-1"><strong>Current estimated APY:</strong> <span>@currentEstimateAPY%</span></small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Unlock phases &amp; rewards</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Current phase: <span style="@(currentPhase == "Capped" ? "color:orange;" : "color:green;")">@currentPhase</span></h6>
+                    <small class="card-text"><strong>Phase start date:</strong> @(currentPhase == "Capped" ? launchDate.ToString("yyyy-MM-dd HH:mm:ss UTC") : phaseOneLaunchDate.ToString("yyyy-MM-dd HH:mm:ss UTC"))</small>
+                    <br />
+                    <small class="card-text"><strong>Current emission rate:</strong> @currentEmissions ℏ per 24 hours</small>
+                    <br />
+                    <small class="card-text"><strong>Approximate rewards to date:</strong> @currentRewards ℏ</small>
                 </div>
             </div>
         </div>
@@ -70,22 +75,31 @@ else
 </div>
 
 @code {
-    public TVL TVLSnapshot { get; set; }
+    public TVL? TVLSnapshot { get; set; }
     public double LiveTVL { get; set; }
     private int cappedEmissions = 2000;
     private int phaseOneEmissions = 300000;
     private int phaseTwoEmissions = 500000;
     private int phaseOneMax = 200000000;
     private int phaseTwoMax = 400000000;
-    private string currentPhase;
-    private string currentEmissions;
-    private string currentEstimateAPY;
-    private bool isCapped = true;
-    private string AnimateClass { get; set; }
+    private string currentPhase = "Unknown";
+    private string currentEmissions = "Unknown";
+    private string currentEstimateAPY = "Unknown";
+    private string currentRewards = "Unknown";
+    private bool isCapped;
+    private DateTime launchDate;
+    private DateTime phaseOneLaunchDate;
+    private string AnimateClass { get; set; } = "";
     private Timer timer = new Timer(5000);
 
     protected override async Task OnInitializedAsync()
     {
+        isCapped = Config.GetValue<bool>("IsCapped");
+        var launchDateString = Config.GetValue<string>("LaunchDate");
+        var phaseOneLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
+        launchDate = DateTime.ParseExact(launchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        phaseOneLaunchDate = DateTime.ParseExact(phaseOneLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+
         TVLSnapshot = await TVLService.GetTVLAsync();
         LiveTVL = await TVLService.GetLiveTVL();
 
@@ -94,20 +108,25 @@ else
         if (currentPhase == "Capped")
         {
             currentEmissions = cappedEmissions.ToString("N0");
-            var apy = ((cappedEmissions * 365) / LiveTVL) * 100;
-            currentEstimateAPY = apy.ToString("N2");
+            currentEstimateAPY = CalculateAPY(cappedEmissions, LiveTVL);
+
+            var rewards = CalculateRewards(cappedEmissions, launchDate, DateTime.Now);
+            currentRewards = rewards.ToString("N0");
         }
         else if (currentPhase == "Phase 1")
         {
             currentEmissions = phaseOneEmissions.ToString("N0");
-            var apy = ((phaseOneEmissions * 365) / LiveTVL) * 100;
-            currentEstimateAPY = apy.ToString("N2");
+            currentEstimateAPY = CalculateAPY(phaseOneEmissions, LiveTVL);
+
+            var rewards = CalculateRewards(cappedEmissions, launchDate, phaseOneLaunchDate);
+            rewards += CalculateRewards(phaseOneEmissions, phaseOneLaunchDate, DateTime.Now);
+
+            currentRewards = rewards.ToString("N0");
         }
         else if (currentPhase == "Phase 2")
         {
             currentEmissions = phaseTwoEmissions.ToString("N0");
-            var apy = ((phaseTwoEmissions * 365) / LiveTVL) * 100;
-            currentEstimateAPY = apy.ToString("N2");
+            currentEstimateAPY = CalculateAPY(phaseTwoEmissions, LiveTVL);
         }
         else
         {
@@ -133,5 +152,17 @@ else
         }
 
         await InvokeAsync(StateHasChanged);
+    }
+
+    private string CalculateAPY(int emissions, double tvl)
+    {
+        var apy = ((emissions * 365) / tvl) * 100;
+        return apy.ToString("N2");
+    }
+
+    private int CalculateRewards(int emissions, DateTime from, DateTime to)
+    {
+        var totalDays = (to - from).Days;
+        return emissions * totalDays;
     }
 }
