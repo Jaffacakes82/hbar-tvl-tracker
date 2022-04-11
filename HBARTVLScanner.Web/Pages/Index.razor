@@ -89,6 +89,7 @@ else
     private bool isCapped;
     private DateTime launchDate;
     private DateTime phaseOneLaunchDate;
+    private DateTime phaseTwoLaunchDate;
     private string AnimateClass { get; set; } = "";
     private Timer timer = new Timer(5000);
 
@@ -97,13 +98,15 @@ else
         isCapped = Config.GetValue<bool>("IsCapped");
         var launchDateString = Config.GetValue<string>("LaunchDate");
         var phaseOneLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
+        var phaseTwoLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
         launchDate = DateTime.ParseExact(launchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
         phaseOneLaunchDate = DateTime.ParseExact(phaseOneLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        phaseTwoLaunchDate = DateTime.ParseExact(phaseTwoLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
         TVLSnapshot = await TVLService.GetTVLAsync();
         LiveTVL = await TVLService.GetLiveTVL();
 
-        currentPhase = isCapped ? "Capped" : LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "Unknown";
+        currentPhase = isCapped || DateTime.UtcNow < phaseOneLaunchDate ? "Capped" : LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "Unknown";
 
         if (currentPhase == "Capped")
         {
@@ -127,6 +130,12 @@ else
         {
             currentEmissions = phaseTwoEmissions.ToString("N0");
             currentEstimateAPY = CalculateAPY(phaseTwoEmissions, LiveTVL);
+
+            var rewards = CalculateRewards(cappedEmissions, launchDate, phaseOneLaunchDate);
+            rewards += CalculateRewards(phaseOneEmissions, phaseOneLaunchDate, phaseTwoLaunchDate);
+            rewards += CalculateRewards(phaseTwoEmissions, phaseTwoLaunchDate, DateTime.Now);
+
+            currentRewards = rewards.ToString("N0");
         }
         else
         {
