@@ -98,7 +98,7 @@ else
         isCapped = Config.GetValue<bool>("IsCapped");
         var launchDateString = Config.GetValue<string>("LaunchDate");
         var phaseOneLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
-        var phaseTwoLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
+        var phaseTwoLaunchDateString = Config.GetValue<string>("PhaseTwoLaunchDate");
         launchDate = DateTime.ParseExact(launchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
         phaseOneLaunchDate = DateTime.ParseExact(phaseOneLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
         phaseTwoLaunchDate = DateTime.ParseExact(phaseTwoLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
