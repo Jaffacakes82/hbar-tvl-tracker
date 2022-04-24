@@ -13,11 +13,25 @@
     <div class="col-lg-6 mx-auto">
         <svg width="100" xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 200 200"><title>black-cutout</title><rect x="80.13" y="95.32" width="39.21" height="10.01" /><path d="M99.74,30.66a69.67,69.67,0,1,0,69.67,69.67A69.67,69.67,0,0,0,99.74,30.66m28.78,101h-9.18V112H80.13v19.61H71V69h9.18V88.65h39.21V69h9.18Z" /></svg>
         <h1 class="display-4 my-2">HBAR TVL Tracker</h1>
-        <p class="lead">This tool provides basic insights into TVL in the Stader Labs Hedera liquidity pool. The tool snapshots TVL on an hourly basis, with the aim of tracking TVL changes over time and perhaps in future helping calculate rewards in phase 3.</p>
+        <p class="lead">This tool provides basic insights into TVL in the Stader Labs Hedera liquidity pool.</p>
     </div>
 </div>
 
-@if (TVLSnapshot == null)
+@if (siteDown)
+{
+    <div class="row px-4 py-2 my-2 text-center">
+        <div class="col-lg-6 mx-auto">
+            <div class="alert alert-warning text-center" role="alert">
+                <div>
+                    The site is currently down for maintenance.
+                    <br />
+                    Check back soon!
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (TVLSnapshot == null)
 {
     <div class="row px-4 py-2 my-2 text-center">
         <div class="col-lg-6 mx-auto">
@@ -31,13 +45,13 @@ else
 {
     <div class="row px-4 py-2 my-2 justify-content-center">
         <div class="col-lg-5">
-            <div class="card text-center">
+            <div class="card text-center mb-4 mb-md-0">
                 <div class="card-body">
                     <h5 class="card-title mb-3">TVL statistics</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Live TVL: <span class="@AnimateClass">@LiveTVL.ToString("N8") ℏ</span></h6>
                     @*<small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.TVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small>
-                    <br />
-                    <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>*@
+                        <br />
+                        <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>*@
                     <small class="card-text my-0 mt-1"><strong>Current estimated APY:</strong> <span>@currentEstimateAPY%</span></small>
                     <br />
                     <small class="card-text my-0 mt-1"><strong>Exchange rate:</strong> <span>1 HBAR = ~@ExchangeRate HBARX</span></small>
@@ -88,15 +102,21 @@ else
     private string currentRewards = "Unknown";
 
     private bool isCapped;
+    private bool siteDown;
+
     private DateTime launchDate;
     private DateTime phaseOneLaunchDate;
     private DateTime phaseTwoLaunchDate;
+
     private string AnimateClass { get; set; } = "";
+
     private Timer timer = new Timer(5000);
 
     protected override async Task OnInitializedAsync()
     {
+        siteDown = Config.GetValue<bool>("SiteDown");
         isCapped = Config.GetValue<bool>("IsCapped");
+
         var launchDateString = Config.GetValue<string>("LaunchDate");
         var phaseOneLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
         var phaseTwoLaunchDateString = Config.GetValue<string>("PhaseTwoLaunchDate");
