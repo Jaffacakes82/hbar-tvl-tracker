@@ -38,5 +38,21 @@ namespace HBARTVLScanner.Func
             using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(tvlWithDecimal));
             var blobResult = await blobClient.UploadAsync(memoryStream);
         }
+
+        [FunctionName("Function2")]
+        public async Task Run([TimerTrigger("0 0 7 * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+        {
+            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+
+            var response = await client.GetAsync("https://v2.api.kabuto.sh/transaction?filter[entityId]=0.0.833842");
+            var responseJson = await response.Content.ReadAsStringAsync();
+
+            BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", Environment.GetEnvironmentVariable("StorageKey")));
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("hbarrewards");
+            BlobClient blobClient = containerClient.GetBlobClient(DateTime.UtcNow.ToString("yyyyMMddHHmmss"));
+
+            using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(responseJson));
+            var blobResult = await blobClient.UploadAsync(memoryStream);
+        }
     }
 }
