@@ -8,7 +8,6 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using HBARTVLScanner.Core;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 
 namespace HBARTVLScanner.Func
