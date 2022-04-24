@@ -39,6 +39,8 @@ else
                     <br />
                     <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>*@
                     <small class="card-text my-0 mt-1"><strong>Current estimated APY:</strong> <span>@currentEstimateAPY%</span></small>
+                    <br />
+                    <small class="card-text my-0 mt-1"><strong>Exchange rate:</strong> <span>1 HBAR = ~@ExchangeRate HBARX</span></small>
                 </div>
             </div>
         </div>
@@ -70,17 +72,21 @@ else
 </div>
 
 @code {
-    public TVL? TVLSnapshot { get; set; }
+    public TVL? TVLSnapshot { get; set; } = null;
     public double LiveTVL { get; set; }
+    public string? ExchangeRate { get; set; }
+
     private int cappedEmissions = 2000;
     private int phaseOneEmissions = 300000;
     private int phaseTwoEmissions = 500000;
     private int phaseOneMax = 200000000;
     private int phaseTwoMax = 400000000;
+
     private string currentPhase = "Unknown";
     private string currentEmissions = "Unknown";
     private string currentEstimateAPY = "Unknown";
     private string currentRewards = "Unknown";
+
     private bool isCapped;
     private DateTime launchDate;
     private DateTime phaseOneLaunchDate;
@@ -100,6 +106,7 @@ else
 
         TVLSnapshot = await TVLService.GetTVLAsync();
         LiveTVL = await TVLService.GetLiveTVL();
+        ExchangeRate = await TVLService.GetCurrentExchangeRate();
 
         currentPhase = isCapped || DateTime.UtcNow < phaseOneLaunchDate ? "Capped" : LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "Unknown";
 

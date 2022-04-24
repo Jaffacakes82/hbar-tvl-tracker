@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Storage;
 using Azure.Storage.Blobs;
+using HBARTVLScanner.Core;
 
 namespace HBARTVLScanner.Web.Data;
 
@@ -26,8 +27,8 @@ public class TVLService
         var latestBlobRef = last12Blobs.OrderByDescending(b => b.Properties.LastModified).FirstOrDefault();
         var oldestBlobRef = last12Blobs.OrderBy(b => b.Properties.LastModified).FirstOrDefault();
 
-        var latestBlobClient = containerClient.GetBlobClient(latestBlobRef.Name);
-        var oldestBlobClient = containerClient.GetBlobClient(oldestBlobRef.Name);
+        var latestBlobClient = containerClient.GetBlobClient(latestBlobRef?.Name);
+        var oldestBlobClient = containerClient.GetBlobClient(oldestBlobRef?.Name);
 
         var latestBlobDownload = latestBlobClient.DownloadContent();
         var latestBlobVal = double.Parse(Encoding.UTF8.GetString(latestBlobDownload.Value.Content));
@@ -45,27 +46,35 @@ public class TVLService
 
         var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
         var decimals = int.Parse(config["ContractDecimals"]);
-        var tvl = obj.Data.Contract.Balance.ToString();
+        var tvl = obj?.Data?.Contract?.Balance?.ToString();
 
         var tvlWithDecimal = double.Parse(tvl.Insert(tvl.Length - decimals, "."));
         return tvlWithDecimal;
     }
-}
 
-public class ContractPayload
-{
-    [JsonPropertyName("data")]
-    public ContractPayloadInner Data { get; set; }
-}
+    public async Task<string> GetCurrentExchangeRate()
+    {
+        // Get contract TVL
+        var response = await client.GetAsync("https://v2.api.kabuto.sh/entity/0.0.834119");
+        var responseJson = await response.Content.ReadAsStringAsync();
 
-public class ContractPayloadInner
-{
-    [JsonPropertyName("contract")]
-    public ContractData Contract { get; set; }
-}
+        var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
+        var decimals = int.Parse(config["ContractDecimals"]);
+        var tvl = obj.Data.Contract.Balance.ToString();
 
-public class ContractData
-{
-    [JsonPropertyName("balance")]
-    public string Balance { get; set; }
+        var tvlWithDecimal = double.Parse(tvl.Insert(tvl.Length - decimals, "."));
+
+        // Get HBARX token supply
+        var tokenResponse = await client.GetAsync("https://v2.api.kabuto.sh/entity/0.0.834116");
+        var tokenResponseJson = await tokenResponse.Content.ReadAsStringAsync();
+
+        var tokenObj = JsonSerializer.Deserialize<TokenPayload>(tokenResponseJson);
+
+        var tokenDecimals = int.Parse(tokenObj.Data.Token.Decimals.ToString());
+        var tokenSupply = tokenObj.Data.Token.TotalSupply.ToString();
+
+        var tokenSupplyWithDecimal = double.Parse(tokenSupply.Insert(tokenSupply.Length - tokenDecimals, "."));
+
+        return (tvlWithDecimal / tokenSupplyWithDecimal).ToString("N4");
+    }
 }

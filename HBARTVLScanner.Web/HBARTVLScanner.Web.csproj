@@ -19,4 +19,9 @@
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.11.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HBARTVLScanner.Core\HBARTVLScanner.Core.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

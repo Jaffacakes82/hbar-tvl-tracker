@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Storage;
 using Azure.Storage.Blobs;
+using HBARTVLScanner.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -24,13 +25,12 @@ namespace HBARTVLScanner.Func
             var response = await client.GetAsync("https://v2.api.kabuto.sh/entity/0.0.834119");
             var responseJson = await response.Content.ReadAsStringAsync();
 
-            var obj = JsonSerializer.Deserialize<dynamic>(responseJson);
+            var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
             var decimals = int.Parse(Environment.GetEnvironmentVariable("ContractDecimals"));
 
-            var tvl = obj.data.contract.balance.ToString();
+            var tvl = obj.Data.Contract.Balance.ToString();
 
             var tvlWithDecimal = tvl.Insert(tvl.Length - decimals, ".");
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
             BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", Environment.GetEnvironmentVariable("StorageKey")));
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("hbartvl");

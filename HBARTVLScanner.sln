@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HBARTVLScanner.Web", "HBART
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HBARTVLScanner.Func", "HBARTVLScanner.Func\HBARTVLScanner.Func.csproj", "{0C26AB1E-90D6-4833-BFF2-60BF5B526CAC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HBARTVLScanner.Core", "HBARTVLScanner.Core\HBARTVLScanner.Core.csproj", "{C7658D99-6765-41E8-B9D5-4C0810476C15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0C26AB1E-90D6-4833-BFF2-60BF5B526CAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C26AB1E-90D6-4833-BFF2-60BF5B526CAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C26AB1E-90D6-4833-BFF2-60BF5B526CAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7658D99-6765-41E8-B9D5-4C0810476C15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7658D99-6765-41E8-B9D5-4C0810476C15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7658D99-6765-41E8-B9D5-4C0810476C15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7658D99-6765-41E8-B9D5-4C0810476C15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
