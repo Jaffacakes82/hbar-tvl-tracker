@@ -35,10 +35,9 @@ else
                 <div class="card-body">
                     <h5 class="card-title mb-3">TVL statistics</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Live TVL: <span class="@AnimateClass">@LiveTVL.ToString("N8") ℏ</span></h6>
-                    <small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.TVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small>
+                    @*<small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.TVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small>
                     <br />
-                    <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>
-                    <br />
+                    <small class="card-text my-0 mt-1"><strong>12h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwelveHrChange.ToString("N8") ℏ</span></small>*@
                     <small class="card-text my-0 mt-1"><strong>Current estimated APY:</strong> <span>@currentEstimateAPY%</span></small>
                 </div>
             </div>
@@ -48,11 +47,7 @@ else
                 <div class="card-body">
                     <h5 class="card-title mb-3">Unlock phases &amp; rewards</h5>
                     <h6 class="card-subtitle mb-2 text-muted">Current phase: <span style="@(currentPhase == "Capped" ? "color:orange;" : "color:green;")">@currentPhase</span></h6>
-                    <small class="card-text"><strong>Phase start date:</strong> @(currentPhase == "Capped" ? launchDate.ToString("yyyy-MM-dd HH:mm:ss UTC") : currentPhase == "Phase 1" ? phaseOneLaunchDate.ToString("yyyy-MM-dd HH:mm:ss UTC") : currentPhase == "Phase 2" ? phaseTwoLaunchDate.ToString("yyyy-MM-dd HH:mm:ss UTC") : "Unknown")</small>
-                    <br />
                     <small class="card-text"><strong>Current emission rate:</strong> @currentEmissions ℏ per 24 hours</small>
-                    <br />
-                    <small class="card-text"><strong>Approximate rewards to date:</strong> @currentRewards ℏ</small>
                 </div>
             </div>
         </div>
