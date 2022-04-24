@@ -17,7 +17,7 @@ namespace HBARTVLScanner.Func
         private static readonly HttpClient client = new HttpClient();
 
         [FunctionName("Function1")]
-        public async Task Run([TimerTrigger("0 0 */1 * * *")] TimerInfo myTimer, ILogger log)
+        public async Task RunTVL([TimerTrigger("0 0 */1 * * *")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
@@ -40,7 +40,7 @@ namespace HBARTVLScanner.Func
         }
 
         [FunctionName("Function2")]
-        public async Task Run([TimerTrigger("0 0 7 * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+        public async Task RunRewards([TimerTrigger("0 0 7 * * *")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
