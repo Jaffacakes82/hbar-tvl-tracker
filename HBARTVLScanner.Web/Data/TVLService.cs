@@ -40,35 +40,32 @@ public class TVLService
 
     public async Task<double> GetLiveTVL()
     {
-        var response = await client.GetAsync("https://v2.api.kabuto.sh/entity/0.0.834116");
+        var response = await client.GetAsync("https://v2.api.kabuto.sh/entity/0.0.834119");
         var responseJson = await response.Content.ReadAsStringAsync();
 
-        var obj = JsonSerializer.Deserialize<TVLPayload>(responseJson);
-        var decimals = int.Parse(obj.Data.Token.Decimals.ToString());
-        var tvl = obj.Data.Token.TotalSupply.ToString();
+        var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
+        var decimals = int.Parse(config["ContractDecimals"]);
+        var tvl = obj.Data.Contract.Balance.ToString();
 
         var tvlWithDecimal = double.Parse(tvl.Insert(tvl.Length - decimals, "."));
         return tvlWithDecimal;
     }
 }
 
-public class TVLPayload
+public class ContractPayload
 {
     [JsonPropertyName("data")]
-    public TVLPayloadData Data { get; set; }
+    public ContractPayloadInner Data { get; set; }
 }
 
-public class TVLPayloadData
+public class ContractPayloadInner
 {
-    [JsonPropertyName("token")]
-    public TVLPayloadToken Token { get; set; }
+    [JsonPropertyName("contract")]
+    public ContractData Contract { get; set; }
 }
 
-public class TVLPayloadToken
+public class ContractData
 {
-    [JsonPropertyName("decimals")]
-    public int Decimals { get; set; }
-
-    [JsonPropertyName("totalSupply")]
-    public string TotalSupply { get; set; }
+    [JsonPropertyName("balance")]
+    public string Balance { get; set; }
 }
