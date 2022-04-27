@@ -115,59 +115,63 @@ else
     protected override async Task OnInitializedAsync()
     {
         siteDown = Config.GetValue<bool>("SiteDown");
-        isCapped = Config.GetValue<bool>("IsCapped");
 
-        var launchDateString = Config.GetValue<string>("LaunchDate");
-        var phaseOneLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
-        var phaseTwoLaunchDateString = Config.GetValue<string>("PhaseTwoLaunchDate");
-        launchDate = DateTime.ParseExact(launchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-        phaseOneLaunchDate = DateTime.ParseExact(phaseOneLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-        phaseTwoLaunchDate = DateTime.ParseExact(phaseTwoLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-
-        TVLSnapshot = await TVLService.GetTVLAsync();
-        LiveTVL = await TVLService.GetLiveTVL();
-        ExchangeRate = await TVLService.GetCurrentExchangeRate();
-
-        currentPhase = isCapped || DateTime.UtcNow < phaseOneLaunchDate ? "Capped" : LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "Unknown";
-
-        if (currentPhase == "Capped")
+        if (!siteDown)
         {
-            currentEmissions = cappedEmissions.ToString("N0");
-            currentEstimateAPY = CalculateAPY(cappedEmissions, LiveTVL);
+            isCapped = Config.GetValue<bool>("IsCapped");
 
-            var rewards = CalculateRewards(cappedEmissions, launchDate, DateTime.Now);
-            currentRewards = rewards.ToString("N0");
+            var launchDateString = Config.GetValue<string>("LaunchDate");
+            var phaseOneLaunchDateString = Config.GetValue<string>("PhaseOneLaunchDate");
+            var phaseTwoLaunchDateString = Config.GetValue<string>("PhaseTwoLaunchDate");
+            launchDate = DateTime.ParseExact(launchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            phaseOneLaunchDate = DateTime.ParseExact(phaseOneLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            phaseTwoLaunchDate = DateTime.ParseExact(phaseTwoLaunchDateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+
+            TVLSnapshot = await TVLService.GetTVLAsync();
+            LiveTVL = await TVLService.GetLiveTVL();
+            ExchangeRate = await TVLService.GetCurrentExchangeRate();
+
+            currentPhase = isCapped || DateTime.UtcNow < phaseOneLaunchDate ? "Capped" : LiveTVL <= phaseOneMax ? "Phase 1" : LiveTVL > phaseOneMax && LiveTVL <= phaseTwoMax ? "Phase 2" : "Unknown";
+
+            if (currentPhase == "Capped")
+            {
+                currentEmissions = cappedEmissions.ToString("N0");
+                currentEstimateAPY = CalculateAPY(cappedEmissions, LiveTVL);
+
+                var rewards = CalculateRewards(cappedEmissions, launchDate, DateTime.Now);
+                currentRewards = rewards.ToString("N0");
+            }
+            else if (currentPhase == "Phase 1")
+            {
+                currentEmissions = phaseOneEmissions.ToString("N0");
+                currentEstimateAPY = CalculateAPY(phaseOneEmissions, LiveTVL);
+
+                var rewards = CalculateRewards(cappedEmissions, launchDate, phaseOneLaunchDate);
+                rewards += CalculateRewards(phaseOneEmissions, phaseOneLaunchDate, DateTime.Now);
+
+                currentRewards = rewards.ToString("N0");
+            }
+            else if (currentPhase == "Phase 2")
+            {
+                currentEmissions = phaseTwoEmissions.ToString("N0");
+                currentEstimateAPY = CalculateAPY(phaseTwoEmissions, LiveTVL);
+
+                var rewards = CalculateRewards(cappedEmissions, launchDate, phaseOneLaunchDate);
+                rewards += CalculateRewards(phaseOneEmissions, phaseOneLaunchDate, phaseTwoLaunchDate);
+                rewards += CalculateRewards(phaseTwoEmissions, phaseTwoLaunchDate, DateTime.Now);
+
+                currentRewards = rewards.ToString("N0");
+            }
+            else
+            {
+                currentEmissions = "Unknown";
+                currentEstimateAPY = "Unknown";
+            }
+
+            timer.Elapsed += (sender, eventArgs) => GetLiveTVL();
+            timer.AutoReset = true;
+            timer.Start();
         }
-        else if (currentPhase == "Phase 1")
-        {
-            currentEmissions = phaseOneEmissions.ToString("N0");
-            currentEstimateAPY = CalculateAPY(phaseOneEmissions, LiveTVL);
-
-            var rewards = CalculateRewards(cappedEmissions, launchDate, phaseOneLaunchDate);
-            rewards += CalculateRewards(phaseOneEmissions, phaseOneLaunchDate, DateTime.Now);
-
-            currentRewards = rewards.ToString("N0");
-        }
-        else if (currentPhase == "Phase 2")
-        {
-            currentEmissions = phaseTwoEmissions.ToString("N0");
-            currentEstimateAPY = CalculateAPY(phaseTwoEmissions, LiveTVL);
-
-            var rewards = CalculateRewards(cappedEmissions, launchDate, phaseOneLaunchDate);
-            rewards += CalculateRewards(phaseOneEmissions, phaseOneLaunchDate, phaseTwoLaunchDate);
-            rewards += CalculateRewards(phaseTwoEmissions, phaseTwoLaunchDate, DateTime.Now);
-
-            currentRewards = rewards.ToString("N0");
-        }
-        else
-        {
-            currentEmissions = "Unknown";
-            currentEstimateAPY = "Unknown";
-        }
-
-        timer.Elapsed += (sender, eventArgs) => GetLiveTVL();
-        timer.AutoReset = true;
-        timer.Start();
     }
 
     private async void GetLiveTVL()
