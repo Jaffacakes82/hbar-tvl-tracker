@@ -18,12 +18,12 @@ public class TVLService
         this.config = config;
     }
 
-    public async Task<TVL> GetTVLAsync()
+    public async Task<TVLStats> GetTVLAsync()
     {
         BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", config["StorageKey"]));
         BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("hbartvl");
 
-        var last12Blobs = containerClient.GetBlobs().Where(b => b.Properties.LastModified > DateTime.Now.AddHours(-13));
+        var last12Blobs = containerClient.GetBlobs().Where(b => b.Properties.LastModified > DateTime.Now.AddHours(-25));
         var latestBlobRef = last12Blobs.OrderByDescending(b => b.Properties.LastModified).FirstOrDefault();
         var oldestBlobRef = last12Blobs.OrderBy(b => b.Properties.LastModified).FirstOrDefault();
 
@@ -36,7 +36,7 @@ public class TVLService
         var oldestBlobDownload = oldestBlobClient.DownloadContent();
         var oldestBlobVal = double.Parse(Encoding.UTF8.GetString(oldestBlobDownload.Value.Content));
 
-        return new TVL { Date = DateTime.ParseExact(latestBlobRef.Name, "yyyyMMddHHmmss", CultureInfo.InvariantCulture), TVLValue = latestBlobVal, TwelveHrChange = latestBlobVal - oldestBlobVal };
+        return new TVLStats { Date = DateTime.ParseExact(latestBlobRef.Name, "yyyyMMddHHmmss", CultureInfo.InvariantCulture), SnapshotTVLValue = latestBlobVal, TwentyFourHrChange = latestBlobVal - oldestBlobVal };
     }
 
     public async Task<double> GetLiveTVL()
@@ -50,6 +50,105 @@ public class TVLService
 
         var tvlWithDecimal = double.Parse(tvl.Insert(tvl.Length - decimals, "."));
         return tvlWithDecimal;
+    }
+
+    public async Task<IList<StakePoolReward>> GetStakingOnlyRewards()
+    {
+        BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", config["StorageKey"]));
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("hbarrewards");
+
+        var allBlobs = containerClient.GetBlobs();
+        var allTransactions = new List<Transaction>();
+
+        foreach (var blob in allBlobs)
+        {
+            var blobClient = containerClient.GetBlobClient(blob.Name);
+            var blobContent = await blobClient.DownloadContentAsync();
+            var blobContentString = Encoding.UTF8.GetString(blobContent.Value.Content);
+            var transactionPayload = JsonSerializer.Deserialize<TransactionsPayload>(blobContentString);
+            allTransactions.AddRange(transactionPayload.Data);
+        }
+
+        var distinctTransactions = allTransactions
+            .Where(t => t.Type == "CONTRACT_CALL")
+            .GroupBy(t => t.Id)
+            .Select(t => t.First())
+            .ToList();
+
+        var rewards = new List<StakePoolReward>();
+
+        foreach (var tran in distinctTransactions)
+        {
+            var rewardAfterFeeAmount = tran.Transfers.Where(tran => tran.AccountId == "0.0.834119").First().Amount;
+            var tvlAtReward = tran.Transfers.Where(tran => tran.AccountId == "0.0.834119").First().Balance;
+
+            var rewardAfterFeeAmountWithDecimal = rewardAfterFeeAmount.Insert(rewardAfterFeeAmount.Length - config.GetValue<int>("ContractDecimals"), ".");
+            var tvlAtRewardWithDecimal = tvlAtReward.Insert(tvlAtReward.Length - config.GetValue<int>("ContractDecimals"), ".");
+
+            var rewardAsDouble = double.Parse(rewardAfterFeeAmountWithDecimal);
+            var tvlAsDouble = double.Parse(tvlAtRewardWithDecimal);
+
+            var reward = new StakePoolReward
+            {
+                ConsensusDate = tran.ConsensusAt,
+                IsPhase3 = tvlAsDouble > 400000000,
+                RewardAfterStaderFee = rewardAsDouble,
+                TVLAtReward = tvlAsDouble
+            };
+
+            rewards.Add(reward);
+        }
+
+        return rewards.OrderBy(r => r.ConsensusDate).ToList();
+    }
+
+    public async Task<IList<StakePoolRewardWithFee>> GetRewardsWithStaderFee()
+    {
+        BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", config["StorageKey"]));
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("hbarrewards");
+
+        var allBlobs = containerClient.GetBlobs();
+        var allTransactions = new List<Transaction>();
+
+        foreach (var blob in allBlobs)
+        {
+            var blobClient = containerClient.GetBlobClient(blob.Name);
+            var blobContent = await blobClient.DownloadContentAsync();
+            var blobContentString = Encoding.UTF8.GetString(blobContent.Value.Content);
+            var transactionPayload = JsonSerializer.Deserialize<TransactionsPayload>(blobContentString);
+            allTransactions.AddRange(transactionPayload.Data);
+        }
+
+        var distinctTransactions = allTransactions
+            .Where(t => t.Type == "CONTRACT_CALL")
+            .GroupBy(t => t.Id)
+            .Select(t => t.First())
+            .ToList();
+
+        var rewards = new List<StakePoolRewardWithFee>();
+
+        foreach (var tran in distinctTransactions)
+        {
+            var rewardWithFee = tran.Transfers.Where(tran => tran.AccountId == "0.0.834120").First().Amount;
+            var tvlAtReward = tran.Transfers.Where(tran => tran.AccountId == "0.0.834119").First().Balance;
+
+            var rewardAfterFeeAmountWithDecimal = rewardWithFee.Insert(rewardWithFee.Length - config.GetValue<int>("ContractDecimals"), ".");
+            var tvlAtRewardWithDecimal = tvlAtReward.Insert(tvlAtReward.Length - config.GetValue<int>("ContractDecimals"), ".");
+
+            var rewardAsDouble = double.Parse(rewardAfterFeeAmountWithDecimal);
+            var tvlAsDouble = double.Parse(tvlAtRewardWithDecimal);
+
+            var reward = new StakePoolRewardWithFee
+            {
+                ConsensusDate = tran.ConsensusAt,
+                IsPhase3 = tvlAsDouble > 400000000,
+                TotalReward = Math.Abs(rewardAsDouble)
+            };
+
+            rewards.Add(reward);
+        }
+
+        return rewards.OrderBy(r => r.ConsensusDate).ToList();
     }
 
     public async Task<string> GetCurrentExchangeRate()

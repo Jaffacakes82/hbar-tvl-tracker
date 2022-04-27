@@ -15,9 +15,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Azure.Storage.Blobs" />
+    <None Remove="Radzen.Blazor" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.11.0" />
+    <PackageReference Include="Radzen.Blazor" Version="3.18.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HBARTVLScanner.Core\HBARTVLScanner.Core.csproj">

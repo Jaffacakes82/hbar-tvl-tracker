@@ -5,6 +5,16 @@
     border-radius: 25%;
 }
 
+.divide {
+    border-bottom: 1px solid black;
+    width: 75%;
+    margin: 0 auto;
+}
+
+.card {
+    min-height: 200px;
+}
+
 @keyframes msPulseEffect {
     0% {
         box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.5);
