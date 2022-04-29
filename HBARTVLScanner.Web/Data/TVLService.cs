@@ -176,4 +176,15 @@ public class TVLService
 
         return (tvlWithDecimal / tokenSupplyWithDecimal).ToString("N4");
     }
+
+    public async Task<Price> GetHBARPrice()
+    {
+        var response = await client.GetAsync("https://api.coingecko.com/api/v3/simple/price?ids=hedera-hashgraph&vs_currencies=usd&include_24hr_change=true");
+
+        var responseJson = await response.Content.ReadAsStringAsync();
+
+        var obj = JsonSerializer.Deserialize<PricePayload>(responseJson);
+
+        return obj.Payload;
+    }
 }
