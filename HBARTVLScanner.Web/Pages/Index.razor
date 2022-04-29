@@ -59,7 +59,7 @@ else
             <div class="card text-center mb-4 mb-md-0">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Exchange rate and APY</h5>
-                    <p class="mb-0"><small class="card-text my-0 mt-1"><strong>Exchange rate:</strong> <span>1 HBAR = ~@ExchangeRate HBARX</span></small></p>
+                    <p class="mb-0"><small class="card-text my-0 mt-1"><strong>Exchange rate:</strong> <span>1 HBARX = ~@ExchangeRate HBAR</span></small></p>
                     <p class="mb-1 mt-1"><small class="card-text my-0 mt-1"><strong>Phase 3 emission rate:</strong> @emissionRate.ToString() ℏ</small></p>
                     <p class="mt-1 mb-0"><small class="card-text my-0"><strong>Estimate APY based on emission rate:</strong> <span style="color:green;"><strong>@phase3Apy%</strong></span></small></p>
                 </div>
@@ -80,7 +80,7 @@ else
                             <h3>Total HBAR</h3>
                             @if (hbarXAmount != 0)
                             {
-                                <p>@((hbarXAmount / double.Parse(ExchangeRate)).ToString("N2"))</p>
+                                <p>@((hbarXAmount * double.Parse(ExchangeRate)).ToString("N2"))</p>
                             }
                             else
                             {
@@ -91,7 +91,7 @@ else
                             <h3>Total HBAR Value ($)</h3>
                             @if (hbarXAmount != 0)
                             {
-                                <p>@(((hbarXAmount / double.Parse(ExchangeRate)) * HBARPrice.USD).ToString("C2", CultureInfo.GetCultureInfo("en-US")))</p>
+                                <p>@(((hbarXAmount * double.Parse(ExchangeRate)) * HBARPrice.USD).ToString("C2", CultureInfo.GetCultureInfo("en-US")))</p>
                             }
                             else
                             {
