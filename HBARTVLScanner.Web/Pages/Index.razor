@@ -69,6 +69,43 @@ else
     <div class="row px-4 py-2 my-2 justify-content-center">
         <div class="col-lg-10">
             <div class="card text-center mb-4 mb-md-0">
+                <div class="card-header">
+                    <span>The current HBAR price is <strong>$@HBARPrice.USD.ToString("N4")</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="@(priceDown ? "color:red;" : "color:green;")">@(priceDown ? @<i class="bi bi-arrow-down-circle-fill"></i> : @<i class="bi arrow-up-circle-fill"></i>) @Math.Abs(@HBARPrice.TwentyFourHourChange).ToString("N1")%</span>
+                </div>
+                <div class="card-body">
+                    <label for="hbarXValue" class="form-label">Enter your HBARX amount</label>
+                    <input @bind="hbarXAmount" @oninput="@((e) => { hbarXAmount = !string.IsNullOrWhiteSpace(e.Value.ToString()) ? double.Parse(e.Value.ToString()) : 0;})" type="number" class="form-control" id="hbarXValue">
+                    <div class="mt-5 calculations row justify-content-center">
+                        <div class="calculated-stat col-lg-6">
+                            <h3>Total HBAR</h3>
+                            @if (hbarXAmount != 0)
+                            {
+                                <p>@((hbarXAmount / double.Parse(ExchangeRate)).ToString("N2")</p>
+                            }
+                            else
+                            {
+                                <p><i class="bi bi-three-dots"></i></p>
+                            }
+                        </div>
+                        <div class="calculated-stat col-lg-6">
+                            <h3>Total HBAR Value ($)</h3>
+                            @if (hbarXAmount != 0)
+                            {
+                                <p>@(((hbarXAmount / double.Parse(ExchangeRate)) * HBARPrice.USD).ToString("C2", CultureInfo.GetCultureInfo("en-US"))</p>
+                            }
+                            else
+                            {
+                                <p><i class="bi bi-three-dots"></i></p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row px-4 py-2 my-2 justify-content-center">
+        <div class="col-lg-10">
+            <div class="card text-center mb-4 mb-md-0">
                 <div class="card-body">
                     <RadzenChart>
                         <RadzenLineSeries Smooth="true" Data="RewardsWithoutFee" Title="Rewards" CategoryProperty="ConsensusDate" LineType="LineType.Dashed" ValueProperty="RewardAfterStaderFee">
@@ -147,7 +184,10 @@ else
     private double emissionRate;
     private string phase3Apy;
 
+    private double hbarXAmount;
+
     private bool siteDown;
+    private bool priceDown;
 
     private string AnimateClass { get; set; } = "";
 
@@ -164,6 +204,8 @@ else
             LiveTVL = await TVLService.GetLiveTVL();
             ExchangeRate = await TVLService.GetCurrentExchangeRate();
             HBARPrice = await TVLService.GetHBARPrice();
+
+            priceDown = HBARPrice.TwentyFourHourChange < 0;
 
             sumTotalRewardsToDate = RewardsWithFee.Where(r => !r.IsPhase3).Select(r => r.TotalReward).Sum();
             epochs = (new DateTime(2022, 07, 01) - new DateTime(2022, 04, 29)).TotalDays;

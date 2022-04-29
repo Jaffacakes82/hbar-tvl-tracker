@@ -15,6 +15,34 @@
     min-height: 185px;
 }
 
+.form-label {
+    font-weight: 300;
+    font-size: 1.5rem;
+}
+
+.form-control {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.calculations {
+/*    max-width:80%;*/
+    margin: 0 auto;
+}
+
+.calculated-stat {
+    display: inline-block;
+}
+
+    .calculated-stat > h3 {
+        font-weight: 800;
+    }
+
+    .calculated-stat > p {
+        font-size: 3rem;
+        font-weight: 300;
+    }
+
 @keyframes msPulseEffect {
     0% {
         box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.5);
