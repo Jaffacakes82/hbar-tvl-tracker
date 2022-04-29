@@ -80,7 +80,7 @@ else
                             <h3>Total HBAR</h3>
                             @if (hbarXAmount != 0)
                             {
-                                <p>@((hbarXAmount / double.Parse(ExchangeRate)).ToString("N2")</p>
+                                <p>@((hbarXAmount / double.Parse(ExchangeRate)).ToString("N2"))</p>
                             }
                             else
                             {
@@ -91,7 +91,7 @@ else
                             <h3>Total HBAR Value ($)</h3>
                             @if (hbarXAmount != 0)
                             {
-                                <p>@(((hbarXAmount / double.Parse(ExchangeRate)) * HBARPrice.USD).ToString("C2", CultureInfo.GetCultureInfo("en-US"))</p>
+                                <p>@(((hbarXAmount / double.Parse(ExchangeRate)) * HBARPrice.USD).ToString("C2", CultureInfo.GetCultureInfo("en-US")))</p>
                             }
                             else
                             {
