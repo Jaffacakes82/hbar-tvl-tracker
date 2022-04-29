@@ -91,7 +91,7 @@ public class TVLService
             var reward = new StakePoolReward
             {
                 ConsensusDate = tran.ConsensusAt,
-                IsPhase3 = tvlAsDouble > 400000000,
+                IsPhase3 = tvlAsDouble > 400000000 && tran.ConsensusAt > new DateTime(2022, 04, 30),
                 RewardAfterStaderFee = rewardAsDouble,
                 TVLAtReward = tvlAsDouble
             };
@@ -141,7 +141,7 @@ public class TVLService
             var reward = new StakePoolRewardWithFee
             {
                 ConsensusDate = tran.ConsensusAt,
-                IsPhase3 = tvlAsDouble > 400000000,
+                IsPhase3 = tvlAsDouble > 400000000 && tran.ConsensusAt > new DateTime(2022, 04, 30),
                 TotalReward = Math.Abs(rewardAsDouble)
             };
 
