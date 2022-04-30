@@ -80,7 +80,7 @@ else
                             <h3>Total HBAR</h3>
                             @if (hbarXAmount != 0)
                             {
-                                <p>@((hbarXAmount * double.Parse(ExchangeRate)).ToString("N2"))</p>
+                                <p>~@((hbarXAmount * double.Parse(ExchangeRate)).ToString("N2"))</p>
                             }
                             else
                             {
@@ -91,7 +91,7 @@ else
                             <h3>Total HBAR Value ($)</h3>
                             @if (hbarXAmount != 0)
                             {
-                                <p>@(((hbarXAmount * double.Parse(ExchangeRate)) * HBARPrice.USD).ToString("C2", CultureInfo.GetCultureInfo("en-US")))</p>
+                                <p>~@(((hbarXAmount * double.Parse(ExchangeRate)) * HBARPrice.USD).ToString("C2", CultureInfo.GetCultureInfo("en-US")))</p>
                             }
                             else
                             {
@@ -108,7 +108,7 @@ else
             <div class="card text-center mb-4 mb-md-0">
                 <div class="card-body">
                     <RadzenChart>
-                        <RadzenLineSeries Smooth="true" Data="RewardsWithoutFee" Title="Rewards" CategoryProperty="ConsensusDate" LineType="LineType.Dashed" ValueProperty="RewardAfterStaderFee">
+                        <RadzenLineSeries Smooth="true" Data="RewardsWithoutFee.TakeLast(14)" Title="Rewards" CategoryProperty="ConsensusDate" LineType="LineType.Dashed" ValueProperty="RewardAfterStaderFee">
                             <RadzenMarkers MarkerType="MarkerType.Circle" />
                         </RadzenLineSeries>
                         <RadzenCategoryAxis Padding="20" FormatString="{0:MM/dd}" />
@@ -123,10 +123,44 @@ else
     </div>
     <div class="row px-4 py-2 my-2 justify-content-center">
         <div class="col-lg-10">
+            <div class="accordion" id="rewards-accordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="rewards-heading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rewards-collapse" aria-expanded="false" aria-controls="rewards-collapse">
+                            <strong>View historic rewards distribution</strong>
+                        </button>
+                    </h2>
+                    <div id="rewards-collapse" class="accordion-collapse collapse" aria-labelledby="rewards-heading" data-bs-parent="#rewards-accordion">
+                        <div class="accordion-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Reward after Stader fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var reward in RewardsWithoutFee.OrderByDescending(r => r.ConsensusDate))
+                                    {
+                                        <tr>
+                                            <td>@reward.ConsensusDate.ToString("dd MMM yyyy HH:mm:ss UTC")</td>
+                                            <td>@reward.RewardAfterStaderFee ℏ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row px-4 py-2 my-2 justify-content-center">
+        <div class="col-lg-10">
             <div class="card text-center mb-4 mb-md-0">
                 <div class="card-body">
                     <RadzenChart>
-                        <RadzenLineSeries Smooth="true" Data="RewardsWithoutFee" Title="TVL" CategoryProperty="ConsensusDate" LineType="LineType.Dashed" ValueProperty="TVLAtReward">
+                        <RadzenLineSeries Smooth="true" Data="RewardsWithoutFee.TakeLast(14)" Title="TVL" CategoryProperty="ConsensusDate" LineType="LineType.Dashed" ValueProperty="TVLAtReward">
                             <RadzenMarkers MarkerType="MarkerType.Circle" />
                         </RadzenLineSeries>
                         <RadzenCategoryAxis Padding="20" FormatString="{0:MM/dd}" />
@@ -139,8 +173,41 @@ else
             </div>
         </div>
     </div>
+    <div class="row px-4 py-2 my-2 justify-content-center">
+        <div class="col-lg-10">
+            <div class="accordion" id="tvl-accordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="tvl-heading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tvl-collapse" aria-expanded="false" aria-controls="tvl-collapse">
+                            <strong>View historic TVL</strong>
+                        </button>
+                    </h2>
+                    <div id="tvl-collapse" class="accordion-collapse collapse" aria-labelledby="tvl-heading" data-bs-parent="#tvl-accordion">
+                        <div class="accordion-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">TVL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var reward in RewardsWithoutFee.OrderByDescending(r => r.ConsensusDate))
+                                    {
+                                        <tr>
+                                            <td>@reward.ConsensusDate.ToString("dd MMM yyyy HH:mm:ss UTC")</td>
+                                            <td>@reward.TVLAtReward ℏ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 }
-
 
 <div class="row px-4 pt-3 my-3 text-center">
     <div class="col-lg-6 mx-auto">
