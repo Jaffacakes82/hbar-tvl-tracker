@@ -21,13 +21,13 @@ namespace HBARTVLScanner.Func
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            var response = await client.GetAsync("https://v2.api.kabuto.sh/entity/0.0.834119");
+            var response = await client.GetAsync("https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/0.0.834119");
             var responseJson = await response.Content.ReadAsStringAsync();
 
             var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
             var decimals = int.Parse(Environment.GetEnvironmentVariable("ContractDecimals"));
 
-            var tvl = obj.Data.Contract.Balance.ToString();
+            var tvl = obj.Balance.Balance.ToString();
 
             var tvlWithDecimal = tvl.Insert(tvl.Length - decimals, ".");
 
@@ -40,11 +40,11 @@ namespace HBARTVLScanner.Func
         }
 
         [FunctionName("Function2")]
-        public async Task RunRewards([TimerTrigger("0 0 7 * * *")] TimerInfo myTimer, ILogger log)
+        public async Task RunRewards([TimerTrigger("0 0 7 * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            var response = await client.GetAsync("https://v2.api.kabuto.sh/transaction?filter[entityId]=0.0.833842");
+            var response = await client.GetAsync("https://mainnet-public.mirrornode.hedera.com/api/v1/transactions?limit=100&account.id=0.0.833842");
             var responseJson = await response.Content.ReadAsStringAsync();
 
             BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri("https://sthbartvl.blob.core.windows.net/"), new StorageSharedKeyCredential("sthbartvl", Environment.GetEnvironmentVariable("StorageKey")));

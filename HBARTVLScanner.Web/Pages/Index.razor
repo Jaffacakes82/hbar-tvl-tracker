@@ -50,8 +50,16 @@ else
                 <div class="card-body">
                     <h5 class="card-title mb-3">TVL statistics</h5>
                     <h6 class="card-subtitle mb-3 text-muted">Live TVL: <span class="@AnimateClass">@LiveTVL.ToString("N8") ℏ</span></h6>
-                    <p class="mb-0"><small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.SnapshotTVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small></p>
-                    <p class="mb-0 mt-2"><small class="card-text my-0 mt-1"><strong>24h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwentyFourHrChange.ToString("N8") ℏ</span></small></p>
+                    @if (TVLSnapshot.SnapshotTVLValue != 0)
+                    {
+                        <p class="mb-0"><small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.SnapshotTVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small></p>
+                        <p class="mb-0 mt-2"><small class="card-text my-0 mt-1"><strong>24h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwentyFourHrChange.ToString("N8") ℏ</span></small></p>
+                    }
+                    else
+                    {
+                        <p class="mb-0"><small class="card-text my-0"><strong>Last snapshot:</strong> Temporarily unavailable</small></p>
+                        <p class="mb-0 mt-2"><small class="card-text my-0 mt-1"><strong>24h change:</strong> Temporarily unavailable</small></p>
+                    }
                 </div>
             </div>
         </div>
@@ -60,8 +68,8 @@ else
                 <div class="card-body">
                     <h5 class="card-title mb-3">Exchange rate and APY</h5>
                     <p class="mb-0"><small class="card-text my-0 mt-1"><strong>Exchange rate:</strong> <span>1 HBARX = ~@ExchangeRate HBAR</span></small></p>
-                    <p class="mb-1 mt-1"><small class="card-text my-0 mt-1"><strong>Phase 3 emission rate:</strong> @emissionRate.ToString() ℏ</small></p>
-                    <p class="mt-1 mb-0"><small class="card-text my-0"><strong>Estimate APY based on emission rate:</strong> <span style="color:green;"><strong>@phase3Apy%</strong></span></small></p>
+                    <p class="mb-1 mt-1"><small class="card-text my-0 mt-1"><strong>Phase 3 emission rate:</strong> ~668k ℏ</small></p>
+                    <p class="mt-1 mb-0"><small class="card-text my-0"><strong>Estimate APY based on emission rate:</strong> <span style="color:green;"><strong>~@phase3Apy%</strong></span></small></p>
                 </div>
             </div>
         </div>
@@ -70,7 +78,7 @@ else
         <div class="col-lg-10">
             <div class="card text-center mb-4 mb-md-0">
                 <div class="card-header">
-                    <span>The current HBAR price is <strong>$@HBARPrice.USD.ToString("N4")</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="@(priceDown ? "color:red;" : "color:green;")">@(priceDown ? @<i class="bi bi-arrow-down-circle-fill"></i> : @<i class="bi arrow-up-circle-fill"></i>) @Math.Abs(@HBARPrice.TwentyFourHourChange).ToString("N1")%</span>
+                    <span>The current HBAR price is <strong>$@HBARPrice.USD.ToString("N4")</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="@(priceDown ? "color:red;" : "color:green;")">@(priceDown ? @<i class="bi bi-arrow-down-circle-fill"></i> : @<i class="bi bi-arrow-up-circle-fill"></i>) @Math.Abs(@HBARPrice.TwentyFourHourChange).ToString("N1")%</span>
                 </div>
                 <div class="card-body">
                     <label for="hbarXValue" class="form-label">Enter your HBARX amount</label>
@@ -155,58 +163,6 @@ else
             </div>
         </div>
     </div>
-    <div class="row px-4 py-2 my-2 justify-content-center">
-        <div class="col-lg-10">
-            <div class="card text-center mb-4 mb-md-0">
-                <div class="card-body">
-                    <RadzenChart>
-                        <RadzenLineSeries Smooth="true" Data="RewardsWithoutFee.TakeLast(14)" Title="TVL" CategoryProperty="ConsensusDate" LineType="LineType.Dashed" ValueProperty="TVLAtReward">
-                            <RadzenMarkers MarkerType="MarkerType.Circle" />
-                        </RadzenLineSeries>
-                        <RadzenCategoryAxis Padding="20" FormatString="{0:MM/dd}" />
-                        <RadzenValueAxis Formatter="@FormatReward">
-                            <RadzenGridLines Visible="true" />
-                            <RadzenAxisTitle Text="TVL at reward" />
-                        </RadzenValueAxis>
-                    </RadzenChart>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row px-4 py-2 my-2 justify-content-center">
-        <div class="col-lg-10">
-            <div class="accordion" id="tvl-accordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="tvl-heading">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tvl-collapse" aria-expanded="false" aria-controls="tvl-collapse">
-                            <strong>View historic TVL</strong>
-                        </button>
-                    </h2>
-                    <div id="tvl-collapse" class="accordion-collapse collapse" aria-labelledby="tvl-heading" data-bs-parent="#tvl-accordion">
-                        <div class="accordion-body">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Date</th>
-                                        <th scope="col">TVL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var reward in RewardsWithoutFee.OrderByDescending(r => r.ConsensusDate))
-                                    {
-                                        <tr>
-                                            <td>@reward.ConsensusDate.ToString("dd MMM yyyy HH:mm:ss UTC")</td>
-                                            <td>@reward.TVLAtReward ℏ</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 }
 
 <div class="row px-4 pt-3 my-3 text-center">
@@ -231,22 +187,15 @@ else
 @code {
     public TVLStats? TVLSnapshot { get; set; } = null;
     public IList<StakePoolReward> RewardsWithoutFee { get; set; }
-    public IList<StakePoolRewardWithFee> RewardsWithFee { get; set; }
     public Price HBARPrice { get; set; }
 
     public double LiveTVL { get; set; }
     public string? ExchangeRate { get; set; }
 
-    private int phaseTwoEmissions = 500000;
     private int phaseThreeMaxRewards = 50000000;
     private int phaseOneMax = 200000000;
     private int phaseTwoMax = 400000000;
 
-    private string currentPhase = "Unknown";
-    private string currentEmissions = "Unknown";
-    private string currentEstimateAPY = "Unknown";
-
-    private double sumTotalRewardsToDate;
     private double epochs;
     private double emissionRate;
     private string phase3Apy;
@@ -266,7 +215,6 @@ else
         if (!siteDown)
         {
             RewardsWithoutFee = await TVLService.GetStakingOnlyRewards();
-            RewardsWithFee = await TVLService.GetRewardsWithStaderFee();
             TVLSnapshot = await TVLService.GetTVLAsync();
             LiveTVL = await TVLService.GetLiveTVL();
             ExchangeRate = await TVLService.GetCurrentExchangeRate();
@@ -274,10 +222,7 @@ else
 
             priceDown = HBARPrice.TwentyFourHourChange < 0;
 
-            sumTotalRewardsToDate = RewardsWithFee.Where(r => !r.IsPhase3).Select(r => r.TotalReward).Sum();
-            epochs = (new DateTime(2022, 07, 01) - new DateTime(2022, 04, 29)).TotalDays;
-
-            emissionRate = (phaseThreeMaxRewards - sumTotalRewardsToDate) / epochs;
+            emissionRate = 668139;
 
             phase3Apy = CalculateAPY(emissionRate, LiveTVL);
 
@@ -310,7 +255,7 @@ else
     private string CalculateAPY(double emissions, double tvl)
     {
         var apy = ((emissions * 365) / tvl) * 100;
-        return apy.ToString("N2");
+        return apy.ToString("N1");
     }
 
     private int CalculateRewards(int emissions, DateTime from, DateTime to)

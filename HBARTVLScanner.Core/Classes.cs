@@ -4,59 +4,42 @@ namespace HBARTVLScanner.Core;
 
 public class ContractPayload
 {
-    [JsonPropertyName("data")]
-    public ContractPayloadInner? Data { get; set; }
+    [JsonPropertyName("balance")]
+    public ContractBalance? Balance { get; set; }
 }
 
-public class ContractPayloadInner
-{
-    [JsonPropertyName("contract")]
-    public ContractData? Contract { get; set; }
-}
-
-public class ContractData
+public class ContractBalance
 {
     [JsonPropertyName("balance")]
-    public string? Balance { get; set; }
+    public double? Balance { get; set; }
 }
 
 public class TokenPayload
 {
-    [JsonPropertyName("data")]
-    public TokenPayloadInner? Data { get; set; }
-}
-
-public class TokenPayloadInner
-{
-    [JsonPropertyName("token")]
-    public TokenData? Token { get; set; }
-}
-
-public class TokenData
-{
-    [JsonPropertyName("decimals")]
-    public int Decimals { get; set; }
-
-    [JsonPropertyName("totalSupply")]
+    [JsonPropertyName("total_supply")]
     public string? TotalSupply { get; set; }
+
+    [JsonPropertyName("decimals")]
+    public string? Decimals { get; set; }
 }
+
 
 public class TransactionsPayload
 {
-    [JsonPropertyName("data")]
-    public IList<Transaction>? Data { get; set; }
+    [JsonPropertyName("transactions")]
+    public IList<Transaction>? Transactions { get; set; }
 }
 
 public class Transaction
 {
-    [JsonPropertyName("id")]
+    [JsonPropertyName("transaction_id")]
     public string Id { get; set; }
 
-    [JsonPropertyName("type")]
+    [JsonPropertyName("name")]
     public string Type { get; set; }
 
-    [JsonPropertyName("consensusAt")]
-    public DateTime ConsensusAt { get; set; }
+    [JsonPropertyName("consensus_timestamp")]
+    public string ConsensusAt { get; set; }
 
     [JsonPropertyName("transfers")]
     public IList<TransactionTransfer> Transfers { get; set; }
@@ -65,10 +48,8 @@ public class Transaction
 
 public class TransactionTransfer
 {
-    [JsonPropertyName("accountId")]
+    [JsonPropertyName("account")]
     public string AccountId { get; set; }
     [JsonPropertyName("amount")]
-    public string Amount { get; set; }
-    [JsonPropertyName("balance")]
-    public string Balance { get; set; }
+    public double Amount { get; set; }
 }
