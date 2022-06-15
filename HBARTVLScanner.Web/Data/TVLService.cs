@@ -86,23 +86,26 @@ public class TVLService
 
         foreach (var tran in distinctTransactions)
         {
-            var rewardAfterFeeAmount = tran.Transfers.Where(tran => tran.AccountId == "0.0.834119").First().Amount.ToString();
+            var rewardAfterFeeAmount = tran.Transfers.Where(tran => tran.AccountId == "0.0.834119").FirstOrDefault()?.Amount.ToString();
 
-            var rewardAfterFeeAmountWithDecimal = rewardAfterFeeAmount.Insert(rewardAfterFeeAmount.Length - config.GetValue<int>("ContractDecimals"), ".");
-
-            var rewardAsDouble = double.Parse(rewardAfterFeeAmountWithDecimal);
-
-            var consensusString = tran.ConsensusAt.Substring(0, tran.ConsensusAt.IndexOf("."));
-            var consensusAt = DateTimeOffset.FromUnixTimeSeconds(long.Parse(consensusString)).DateTime;
-
-            var reward = new StakePoolReward
+            if (!string.IsNullOrWhiteSpace(rewardAfterFeeAmount))
             {
-                ConsensusDate = consensusAt,
-                IsPhase3 = true,
-                RewardAfterStaderFee = rewardAsDouble
-            };
+                var rewardAfterFeeAmountWithDecimal = rewardAfterFeeAmount.Insert(rewardAfterFeeAmount.Length - config.GetValue<int>("ContractDecimals"), ".");
 
-            rewards.Add(reward);
+                var rewardAsDouble = double.Parse(rewardAfterFeeAmountWithDecimal);
+
+                var consensusString = tran.ConsensusAt.Substring(0, tran.ConsensusAt.IndexOf("."));
+                var consensusAt = DateTimeOffset.FromUnixTimeSeconds(long.Parse(consensusString)).DateTime;
+
+                var reward = new StakePoolReward
+                {
+                    ConsensusDate = consensusAt,
+                    IsPhase3 = true,
+                    RewardAfterStaderFee = rewardAsDouble
+                };
+
+                rewards.Add(reward);
+            }
         }
 
         return rewards.OrderBy(r => r.ConsensusDate).ToList();
