@@ -48,7 +48,7 @@ public class TVLService
 
     public async Task<double> GetLiveTVL()
     {
-        var response = await client.GetAsync("https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/0.0.834119");
+        var response = await client.GetAsync("https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/0.0.1027588");
         var responseJson = await response.Content.ReadAsStringAsync();
 
         var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
@@ -86,7 +86,7 @@ public class TVLService
 
         foreach (var tran in distinctTransactions)
         {
-            var rewardAfterFeeAmount = tran.Transfers.Where(tran => tran.AccountId == "0.0.834119").FirstOrDefault()?.Amount.ToString();
+            var rewardAfterFeeAmount = tran.Transfers.Where(tran => tran.AccountId == "0.0.1027588").FirstOrDefault()?.Amount.ToString();
 
             if (!string.IsNullOrWhiteSpace(rewardAfterFeeAmount))
             {
@@ -114,7 +114,7 @@ public class TVLService
     public async Task<string> GetCurrentExchangeRate()
     {
         // Get contract TVL
-        var response = await client.GetAsync("https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/0.0.834119");
+        var response = await client.GetAsync("https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/0.0.1027588");
         var responseJson = await response.Content.ReadAsStringAsync();
 
         var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
