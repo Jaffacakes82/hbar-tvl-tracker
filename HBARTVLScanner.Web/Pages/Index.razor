@@ -53,7 +53,7 @@ else
                     @if (TVLSnapshot.SnapshotTVLValue != 0)
                     {
                         <p class="mb-0"><small class="card-text my-0"><strong>Last snapshot:</strong> @TVLSnapshot.SnapshotTVLValue.ToString("N8") ℏ at @TVLSnapshot.Date.ToString("yyyy-MM-dd HH:mm:ss UTC")</small></p>
-                        <p class="mb-0 mt-2"><small class="card-text my-0 mt-1"><strong>24h change:</strong> <span style="color:green;">+ @TVLSnapshot.TwentyFourHrChange.ToString("N8") ℏ</span></small></p>
+                        <p class="mb-0 mt-2"><small class="card-text my-0 mt-1"><strong>24h change:</strong> <span style="color:blue;">@TVLSnapshot.TwentyFourHrChange.ToString("N8") ℏ</span></small></p>
                     }
                     else
                     {
