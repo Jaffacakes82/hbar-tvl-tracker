@@ -53,7 +53,7 @@ public class TVLService
 
         var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
         var decimals = int.Parse(config["ContractDecimals"]);
-        var tvl = obj?.Balance?.Balance?.ToString();
+        var tvl = obj?.Balance?.Balance?.ToString("F0");
 
         var tvlWithDecimal = double.Parse(tvl.Insert(tvl.Length - decimals, "."));
         return tvlWithDecimal;
@@ -119,7 +119,7 @@ public class TVLService
 
         var obj = JsonSerializer.Deserialize<ContractPayload>(responseJson);
         var decimals = int.Parse(config["ContractDecimals"]);
-        var tvl = obj.Balance.Balance.ToString();
+        var tvl = obj?.Balance?.Balance?.ToString("F0");
 
         var tvlWithDecimal = double.Parse(tvl.Insert(tvl.Length - decimals, "."));
 
