@@ -86,7 +86,7 @@ public class TVLService
 
         foreach (var tran in distinctTransactions)
         {
-            var rewardAfterFeeAmount = tran.Transfers.Where(tran => tran.AccountId == "0.0.1027588").FirstOrDefault()?.Amount.ToString();
+            var rewardAfterFeeAmount = tran.Transfers.Where(tran => tran.AccountId == "0.0.1412503").FirstOrDefault()?.Amount.ToString();
 
             if (!string.IsNullOrWhiteSpace(rewardAfterFeeAmount))
             {

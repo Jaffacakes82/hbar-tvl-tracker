@@ -150,6 +150,7 @@ else
             ExchangeRate = await TVLService.GetCurrentExchangeRate();
             HBARPrice = await TVLService.GetHBARPrice();
 
+            priceDown = HBARPrice.TwentyFourHourChange < 0;
             emissionRate = Config.GetValue<int>("EmissionRate");;
 
             phase3Apy = CalculateAPY(emissionRate, LiveTVL);
