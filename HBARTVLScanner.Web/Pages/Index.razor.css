@@ -11,10 +11,6 @@
     margin: 0 auto;
 }
 
-.card {
-    min-height: 185px;
-}
-
 .form-label {
     font-weight: 300;
     font-size: 1.5rem;
