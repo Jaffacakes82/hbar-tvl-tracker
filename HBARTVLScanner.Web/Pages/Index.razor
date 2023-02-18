@@ -45,21 +45,12 @@ else if (LiveTVL == 0)
 else
 {
     <div class="row px-4 py-2 my-2 justify-content-center">
-        <div class="col-lg-5">
+        <div class="col-lg-10">
             <div class="card text-center mb-4 mb-md-0">
                 <div class="card-body">
                     <h5 class="card-title mb-3">TVL statistics</h5>
                     <h6 class="card-subtitle mb-3 text-muted">Live TVL: <span class="@AnimateClass">@LiveTVL.ToString("N8") ℏ</span></h6>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="card text-center mb-4 mb-md-0">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Exchange rate and APY</h5>
                     <p class="mb-0"><small class="card-text my-0 mt-1"><strong>Exchange rate:</strong> <span>1 HBARX = ~@ExchangeRate HBAR</span></small></p>
-                    <p class="mb-1 mt-1"><small class="card-text my-0 mt-1"><strong>Emission rate:</strong> ~@emissionRate ℏ</small></p>
-                    <p class="mt-1 mb-0"><small class="card-text my-0"><strong>Estimate APY based on emission rate:</strong> <span style="color:green;"><strong>~@phase3Apy%</strong></span></small></p>
                 </div>
             </div>
         </div>
